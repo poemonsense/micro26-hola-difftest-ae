@@ -1,0 +1,13 @@
+/codex/
+/AGENTS.md
+/.tools/
+/build/build-*/
+/results/
+/evaluation/
+/**/__pycache__/
+*.pyc
+ae.aux
+ae.log
+ae.out
+ae.pdf
+mill.*

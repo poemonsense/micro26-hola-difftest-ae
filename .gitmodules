@@ -1,0 +1,8 @@
+[submodule "NutShell"]
+	path = NutShell
+	url = https://github.com/OSCPU/NutShell.git
+	branch = svm
+[submodule "SVM"]
+	path = SVM
+	url = https://github.com/poemonsense/SVM.git
+	branch = main
