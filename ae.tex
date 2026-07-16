@@ -133,7 +133,7 @@ following stages; the reviewer does not invoke them separately:
         evaluated RCache configurations.
   \item \path{run/run.sh} boots
         \path{NutShell/ready-to-run/linux.bin} on each simulator and records the
-        raw experiment results.
+        firmware output and simulator snapshots.
   \item \path{report/report.sh} computes the metrics and generates the Figure
         11--14 and Table 4 evaluation files listed in Section A.4.
 \end{enumerate}
@@ -155,7 +155,8 @@ evaluation/table4.txt
 
 Each text report contains both measured values and the paper values, followed
 by the maximum absolute difference in percentage points.  The expected paper
-data are shown below.
+data are shown below.  Figures 11--13 use the final hardware-counter values
+printed by the firmware; Figure 14 uses periodic simulator-counter snapshots.
 
 \paragraph{Figure 11.}
 Evict miss rate is
@@ -232,10 +233,9 @@ Both Figure 14 runs use a 512 KiB, 8-way cache with refill-on-read-miss.  The
 2-port point uses two banks; the 3-port point uses the paper's four-bank,
 three-port design.
 
-The evaluated build keeps the RTL's 1,024-cycle counter snapshots but disables
-the bootrom's final UART counter dump.  This Figure 14 variant suppresses final
-performance-counter output, avoiding a long diagnostic dump after the Linux
-workload while retaining the samples required by \path{plot.py}.
+The Figure 14 plot uses the RTL's 1,024-cycle simulator-counter snapshots.  The
+final hardware-counter values printed by the firmware in the same runs are not
+inputs to these curves.
 
 \paragraph{Table 4.}
 The expected module counts are 253, 61, 52, 126, 87, 154, 49, 25, and 129

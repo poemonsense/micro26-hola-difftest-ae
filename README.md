@@ -44,4 +44,7 @@ and writes:
 - `evaluation/figure14.pdf`
 - `evaluation/table4.txt`
 
+Figures 11-13 use the final hardware-counter values printed by the firmware.
+Figure 14 uses periodic simulator-counter snapshots to generate its curves.
+
 Resource estimates and expected results are in [ae.tex](ae.tex).

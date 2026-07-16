@@ -18,44 +18,18 @@ def read_text(path):
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
-def counters(config_id):
+def hardware_counters(config_id):
     result_dir = RESULTS / config_id
     if not (result_dir / "success").is_file():
         raise FileNotFoundError(f"successful result is missing for {config_id}")
-    parsed = sampled_counters(result_dir / "stderr.log")
-    if parsed:
-        return parsed
+    parsed = {}
     for line in read_text(result_dir / "stdout.log").splitlines():
         match = PERF_RE.match(line)
         if match:
             parsed[match.group(1)] = int(match.group(2), 16)
+    if not parsed:
+        raise ValueError(f"firmware performance counters are missing from {config_id}")
     return parsed
-
-
-def sampled_counters(path):
-    current_cycle = None
-    current_values = {}
-    last_values = {}
-    last_seen_cycle = None
-    for line in read_text(path).splitlines():
-        match = SAMPLE_RE.match(line)
-        if not match:
-            continue
-        cycle = int(match.group(1))
-        if last_seen_cycle is not None and cycle < last_seen_cycle:
-            break
-        last_seen_cycle = cycle
-        if current_cycle is None:
-            current_cycle = cycle
-        elif cycle != current_cycle:
-            if current_values:
-                last_values = current_values
-            current_cycle = cycle
-            current_values = {}
-        current_values[match.group(2)] = int(match.group(3))
-    if current_values:
-        last_values = current_values
-    return last_values
 
 
 def counter(values, config_id, name):
@@ -108,7 +82,7 @@ def figure11():
                     raise FileNotFoundError(f"expected-abort result is missing for {config_id}")
                 row.append(None)
                 continue
-            values = counters(config_id)
+            values = hardware_counters(config_id)
             row.append(
                 percent(
                     counter(values, config_id, "cache_evict_miss"),
@@ -124,13 +98,14 @@ def figure11():
         ("2MB", [0.02, 0.00, 0.00]),
     ]
     print("Figure 11: evict miss rate")
+    print("Counter source: hardware counters printed by firmware")
     print("Metric: 100 x cache_evict_miss / cache_evict")
     print()
     print_table("Measured", "Cache size", ["4-way", "8-way", "16-way"], measured)
     print_table("Paper", "Cache size", ["4-way", "8-way", "16-way"], paper)
 
     plru_id = "c256k-w8-b4-p3-r0-plru"
-    plru = counters(plru_id)
+    plru = hardware_counters(plru_id)
     plru_rate = percent(
         counter(plru, plru_id, "cache_evict_miss"),
         counter(plru, plru_id, "cache_evict"),
@@ -147,7 +122,7 @@ def figure12():
         row = []
         for _, size_id in sizes:
             config_id = f"c{size_id}-w8-b{banks}-p{ports}-r0"
-            values = counters(config_id)
+            values = hardware_counters(config_id)
             row.append(
                 percent(
                     counter(values, config_id, "core_out_miss"),
@@ -164,6 +139,7 @@ def figure12():
     ]
     columns = [label for label, _ in sizes]
     print("Figure 12: instruction miss rate")
+    print("Counter source: hardware counters printed by firmware")
     print("Metric: 100 x core_out_miss / core_out")
     print()
     print_table("Measured", "Configuration", columns, measured)
@@ -179,8 +155,8 @@ def figure13():
     for _, size_id in sizes:
         disabled_id = f"c{size_id}-w8-b2-p2-r0"
         enabled_id = f"c{size_id}-w8-b2-p2-r1"
-        disabled_values = counters(disabled_id)
-        enabled_values = counters(enabled_id)
+        disabled_values = hardware_counters(disabled_id)
+        enabled_values = hardware_counters(enabled_id)
         disabled.append(
             percent(
                 counter(disabled_values, disabled_id, "core_out_miss"),
@@ -209,6 +185,7 @@ def figure13():
     ]
     columns = [label for label, _ in sizes]
     print("Figure 13: refill-on-read-miss impact")
+    print("Counter source: hardware counters printed by firmware")
     print("Miss metric: 100 x core_out_miss / core_out")
     print("Bandwidth overhead metric: 100 x cache_read_cache_miss / (cache_refill + cache_evict)")
     print()
@@ -242,6 +219,7 @@ def figure14():
     if not pdf.is_file() or pdf.stat().st_size == 0:
         raise FileNotFoundError(f"Figure 14 PDF is missing: {pdf}")
     print("Figure 14: phased instruction miss rate and IPC during Linux boot")
+    print("Counter source: periodic simulator counter snapshots")
     print("RCache: 512KB, 8-way, refill-on-read-miss")
     print("2-port: 2 banks; 3-port: 4 banks")
     print("Plot series: 2-port miss rate, 3-port miss rate, IPC, IPC_lsu")
@@ -327,8 +305,7 @@ def table4():
     if actual != expected:
         raise ValueError(f"Table 4 source boundaries changed: got {actual}, expected {expected}")
     print("Table 4: lines of Chisel code for RCore modules")
-    print("Counting method: physical source lines in the paper-listed class definitions;")
-    print("Figure 14-only performance instrumentation is excluded.")
+    print("Counting method: physical source lines in the paper-listed class definitions.")
     print()
     print("Module | LoC | Source | Class definition")
     print("--- | --- | --- | ---")

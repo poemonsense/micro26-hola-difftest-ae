@@ -18,7 +18,12 @@ git -c safe.directory='*' -C "${ROOT_DIR}" submodule update --init
 log "initializing the NutShell source environment"
 make -C "${ROOT_DIR}/NutShell" init
 log "initializing the SVM source environment"
-make -C "${ROOT_DIR}/SVM" init
+git -c safe.directory='*' -C "${ROOT_DIR}/SVM" submodule update --init
+if [[ -f "${ROOT_DIR}/SVM/riscv/encoding.h" ]]; then
+  log "reusing the initialized Spike sources"
+else
+  make -C "${ROOT_DIR}/SVM" riscv
+fi
 
 [[ -f "${ROOT_DIR}/NutShell/ready-to-run/linux.bin" ]] || die "NutShell Linux image is missing"
 [[ -f "${ROOT_DIR}/NutShell/difftest/emu.mk" ]] || die "NutShell difftest submodule is not initialized"

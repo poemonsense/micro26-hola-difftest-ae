@@ -36,8 +36,7 @@ fingerprint="$({
   printf '%s\n' "${row}"
   printf 'nutshell=%s\n' "$(submodule_commit NutShell)"
   printf 'svm=%s\n' "$(submodule_commit SVM)"
-  sha256sum "${SCRIPT_DIR}/build-config.sh" "${ROOT_DIR}/SVM/scripts/syngm.py" \
-    "${ROOT_DIR}/experiments/generated-perf-disabled.h"
+  sha256sum "${SCRIPT_DIR}/build-config.sh" "${ROOT_DIR}/SVM/scripts/syngm.py"
 } | sha256sum | awk '{print $1}')"
 
 if [[ "${FORCE_REBUILD:-0}" != "1" ]] &&
@@ -91,8 +90,6 @@ fi
 if ! command -v hexdump >/dev/null 2>&1; then
   sed -i 's#hexdump -v -e .*#od -An -tx8 -w8 -v $< | tr -d " " > $@#' "${svm_dir}/bootrom/Makefile"
 fi
-sed -i "/make -C bootrom/i cp ${ROOT_DIR}/experiments/generated-perf-disabled.h bootrom/generated-perf.h" \
-  "${generated_dir}/build_ref.sh"
 sed -i "s|make -C bootrom|make -C bootrom CROSS=${riscv_cross}|" "${generated_dir}/build_ref.sh"
 (
   cd "${generated_dir}"
@@ -100,6 +97,8 @@ sed -i "s|make -C bootrom|make -C bootrom CROSS=${riscv_cross}|" "${generated_di
 ) >"${out_dir}/build.log" 2>&1
 
 [[ -x "${dut_dir}/build/emu" ]] || die "${id} did not produce an emulator"
+grep -q '^#define SVM_ENABLE_PERF_COUNTERS 1$' "${svm_dir}/bootrom/generated-perf.h" ||
+  die "${id} did not enable SVM performance counters"
 install -m 0755 "${dut_dir}/build/emu" "${out_dir}/emu"
 cp "${svm_dir}/bootrom/generated-perf.h" "${out_dir}/generated-perf.h"
 cp "${svm_dir}/bootrom/generated-assertion.h" "${out_dir}/generated-assertion.h"
