@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../scripts/common.sh"
 ensure_dir "${ROOT_DIR}/evaluation"
 
-log_2port="${ROOT_DIR}/results/raw/c512k-w8-b2-p2-r1/stderr.log"
+log_2port="${ROOT_DIR}/results/raw/c512k-w8-b2-p2-r1-sim/stderr.log"
 log_3port="${ROOT_DIR}/results/raw/c512k-w8-b4-p3-r1/stderr.log"
 [[ -s "${log_2port}" ]] || die "Figure 14 2-port counter log is missing"
 [[ -s "${log_3port}" ]] || die "Figure 14 3-port counter log is missing"

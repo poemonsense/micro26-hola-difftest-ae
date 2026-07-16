@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}/../scripts/common.sh"
 
 id="$1"
 row="$(manifest_row "${id}")"
-IFS=$'\t' read -r _ _ _ _ _ _ _ figures expected <<< "${row}"
+IFS=$'\t' read -r _ _ _ _ _ _ _ perf_counter figures expected <<< "${row}"
 build_dir="${ROOT_DIR}/build/build-${id}"
 emu="${build_dir}/emu"
 image="${ROOT_DIR}/NutShell/ready-to-run/linux.bin"
@@ -67,6 +67,18 @@ printf '%s\n' "${status}" > "${out_dir}/exit-status.txt"
 if [[ "${expected}" == "good" ]]; then
   [[ "${status}" -eq 0 ]] || die "${id} exited with status ${status}"
   grep -q 'HIT GOOD TRAP' "${out_dir}/stdout.log" || die "${id} did not reach HIT GOOD TRAP"
+  if [[ "${perf_counter}" == "hw" ]]; then
+    grep -q '^\[PERF\]' "${out_dir}/stdout.log" ||
+      die "${id} did not print firmware performance counters"
+  elif [[ "${perf_counter}" == "sim" ]]; then
+    grep -Eq '^\[[[:space:]]*[0-9]+\][[:space:]]+[A-Za-z0-9_]+:' "${out_dir}/stderr.log" ||
+      die "${id} did not print simulator performance-counter snapshots"
+    if grep -q '^\[PERF\]' "${out_dir}/stdout.log"; then
+      die "${id} unexpectedly printed firmware performance counters"
+    fi
+  else
+    die "unsupported performance-counter mode for ${id}: ${perf_counter}"
+  fi
 elif [[ "${expected}" == "abort" ]]; then
   grep -Eq 'REF aborts with code|Assertion [0-9]+ failed|cannot find a replacement' \
     "${out_dir}/stdout.log" "${out_dir}/stderr.log" ||

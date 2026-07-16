@@ -8,7 +8,9 @@ source "${SCRIPT_DIR}/../scripts/common.sh"
 
 id="$1"
 row="$(manifest_row "${id}")"
-IFS=$'\t' read -r _ size ways banks ports refill replacement figures expected <<< "${row}"
+IFS=$'\t' read -r _ size ways banks ports refill replacement perf_counter figures expected <<< "${row}"
+[[ "${perf_counter}" == "hw" || "${perf_counter}" == "sim" ]] ||
+  die "unsupported performance-counter mode for ${id}: ${perf_counter}"
 
 require_command make
 require_command mill
@@ -50,7 +52,7 @@ if [[ "${FORCE_REBUILD:-0}" != "1" ]] &&
   exit 0
 fi
 
-log "building ${id}: ${size}, ${ways}-way, ${banks}-bank, ${ports}-port, refill=${refill}, replacement=${replacement}"
+log "building ${id}: ${size}, ${ways}-way, ${banks}-bank, ${ports}-port, refill=${refill}, replacement=${replacement}, counters=${perf_counter}"
 rm -rf "${out_dir}"
 ensure_dir "${dut_dir}"
 ensure_dir "${svm_dir}"
@@ -76,6 +78,7 @@ args=(
   --cache-banks "${banks}"
   --cache-sram-ports "${ports}"
   --cache-replacement "${replacement}"
+  --perf-counter "${perf_counter}"
   --image "${dut_dir}/ready-to-run/linux.bin"
   --output "${generated_dir}"
 )
@@ -97,8 +100,13 @@ sed -i "s|make -C bootrom|make -C bootrom CROSS=${riscv_cross}|" "${generated_di
 ) >"${out_dir}/build.log" 2>&1
 
 [[ -x "${dut_dir}/build/emu" ]] || die "${id} did not produce an emulator"
-grep -q '^#define SVM_ENABLE_PERF_COUNTERS 1$' "${svm_dir}/bootrom/generated-perf.h" ||
-  die "${id} did not enable SVM performance counters"
+if [[ "${perf_counter}" == "hw" ]]; then
+  grep -q '^#define SVM_ENABLE_PERF_COUNTERS 1$' "${svm_dir}/bootrom/generated-perf.h" ||
+    die "${id} did not enable hardware performance counters"
+else
+  grep -q '^#define SVM_ENABLE_PERF_COUNTERS 0$' "${svm_dir}/bootrom/generated-perf.h" ||
+    die "${id} unexpectedly enabled hardware performance counters"
+fi
 install -m 0755 "${dut_dir}/build/emu" "${out_dir}/emu"
 cp "${svm_dir}/bootrom/generated-perf.h" "${out_dir}/generated-perf.h"
 cp "${svm_dir}/bootrom/generated-assertion.h" "${out_dir}/generated-assertion.h"

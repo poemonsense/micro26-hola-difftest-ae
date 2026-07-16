@@ -29,7 +29,7 @@ for figure in figure11 figure12 figure13 figure14 table4; do
   ensure_dir "${ROOT_DIR}/results/${figure}"
 done
 
-while IFS=$'\t' read -r id _ _ _ _ _ _ figures _; do
+while IFS=$'\t' read -r id _ _ _ _ _ _ _ figures _; do
   [[ "${id}" == "id" ]] && continue
   [[ -f "${ROOT_DIR}/results/raw/${id}/success" ]] || continue
   IFS=',' read -r -a figure_list <<< "${figures}"

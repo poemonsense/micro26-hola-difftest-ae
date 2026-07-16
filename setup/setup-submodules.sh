@@ -32,7 +32,7 @@ fi
 actual_nutshell="$(submodule_commit NutShell)"
 actual_svm="$(submodule_commit SVM)"
 expected_nutshell="c1394855f28b301f5b2cb835ffa642e97bec43c4"
-expected_svm="0c5299a55f9a9c57acc81be36467b18eb7faa96f"
+expected_svm="5e24ddad569a1b60ea0dccd9a29eeee48b568523"
 [[ "${actual_nutshell}" == "${expected_nutshell}" ]] || die "unexpected NutShell commit: ${actual_nutshell}"
 [[ "${actual_svm}" == "${expected_svm}" ]] || die "unexpected SVM commit: ${actual_svm}"
 log "submodule revisions match the evaluated artifact"

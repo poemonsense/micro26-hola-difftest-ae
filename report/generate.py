@@ -340,7 +340,7 @@ def sample_summary(config_id):
 
 
 def figure14():
-    two_id = "c512k-w8-b2-p2-r1"
+    two_id = "c512k-w8-b2-p2-r1-sim"
     three_id = "c512k-w8-b4-p3-r1"
     two = sample_summary(two_id)
     three = sample_summary(three_id)
@@ -436,7 +436,7 @@ def table4_counts():
     core = remove_instrumentation(
         lines(SVM_SCALA / "Core.scala"),
         [
-            'flags.is_mmu , "core_out_mmu"',
+            'flags.is_mmu, "core_out_mmu"',
             'flags.is_load_store, "core_out_load_store"',
         ],
     )
