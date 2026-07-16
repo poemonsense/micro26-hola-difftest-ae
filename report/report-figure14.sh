@@ -17,4 +17,5 @@ python3 "${ROOT_DIR}/SVM/scripts/plot.py" \
   --xmax "${FIGURE14_XMAX:-305}" \
   --output "${ROOT_DIR}/evaluation/figure14.pdf" \
   > "${ROOT_DIR}/evaluation/figure14-plot.log"
-python3 "${SCRIPT_DIR}/generate.py" figure14 > "${ROOT_DIR}/evaluation/figure14.txt"
+rm -f "${ROOT_DIR}/evaluation/figure14.txt"
+python3 "${SCRIPT_DIR}/generate.py" figure14 > "${ROOT_DIR}/evaluation/figure14.md"

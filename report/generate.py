@@ -51,7 +51,7 @@ def fmt(value):
 
 
 def print_table(title, column_title, columns, rows):
-    print(title)
+    print(f"## {title}")
     print(" | ".join([column_title] + list(columns)))
     print(" | ".join(["---"] * (len(columns) + 1)))
     for label, values in rows:
@@ -76,18 +76,19 @@ def displayed_tables_match(measured_rows, paper_rows):
 def print_comparison(measured_rows, paper_rows):
     if displayed_tables_match(measured_rows, paper_rows):
         print(
-            "Comparison: All measured values match the paper at the displayed "
+            "**Comparison:** All measured values match the paper at the displayed "
             "precision (two decimal places)."
         )
     else:
         print(
-            "Comparison: One or more measured values differ from the paper at "
+            "**Comparison:** One or more measured values differ from the paper at "
             "the displayed precision."
         )
 
 
 def raw_log(config_id, filename="stdout.log"):
-    return f"results/raw/{config_id}/{filename}"
+    path = f"results/raw/{config_id}/{filename}"
+    return f"[{path}](../{path})"
 
 
 def hex_counter(value):
@@ -103,14 +104,17 @@ def ratio_calculation(numerator_name, numerator, denominator_name, denominator, 
 
 def print_provenance(entries, paper_source):
     print()
-    print("Measured data provenance")
+    print("## Measured data provenance")
     print("Point | Raw result | Calculation")
     print("--- | --- | ---")
     for point, source, calculation in entries:
         print(f"{point} | {source} | {calculation}")
     print()
-    print("Paper data provenance")
-    print(f"{paper_source} The expected values are declared in report/generate.py.")
+    print("## Paper data provenance")
+    print(
+        f"{paper_source} The expected values are declared in "
+        "[report/generate.py](../report/generate.py)."
+    )
 
 
 def figure11():
@@ -157,9 +161,9 @@ def figure11():
         ("1MB", [0.06, 0.01, 0.00]),
         ("2MB", [0.02, 0.00, 0.00]),
     ]
-    print("Figure 11: evict miss rate")
-    print("Counter source: hardware counters printed by firmware")
-    print("Metric: 100 x cache_evict_miss / cache_evict")
+    print("# Figure 11: evict miss rate")
+    print("**Counter source:** hardware counters printed by firmware")
+    print("**Metric:** 100 x cache_evict_miss / cache_evict")
     print()
     print_table("Measured", "Cache size", ["4-way", "8-way", "16-way"], measured)
     print_table("Paper", "Cache size", ["4-way", "8-way", "16-way"], paper)
@@ -183,7 +187,7 @@ def figure11():
             ),
         )
     )
-    print(f"Supplementary 256KB 8-way PLRU: {fmt(plru_rate)} (paper text: 0.53%)")
+    print(f"**Supplementary 256KB 8-way PLRU:** {fmt(plru_rate)} (paper text: 0.53%)")
     print_provenance(
         provenance,
         "The Paper table is transcribed from paper Figure 11; the PLRU value is "
@@ -223,9 +227,9 @@ def figure12():
         ("4-bank, 3-port", [18.18, 1.89, 0.01, 0.00]),
     ]
     columns = [label for label, _ in sizes]
-    print("Figure 12: instruction miss rate")
-    print("Counter source: hardware counters printed by firmware")
-    print("Metric: 100 x core_out_miss / core_out")
+    print("# Figure 12: instruction miss rate")
+    print("**Counter source:** hardware counters printed by firmware")
+    print("**Metric:** 100 x core_out_miss / core_out")
     print()
     print_table("Measured", "Configuration", columns, measured)
     print_table("Paper", "Configuration", columns, paper)
@@ -303,10 +307,10 @@ def figure13():
         ("overhead", [2.70, 0.41, 0.00, 0.00]),
     ]
     columns = [label for label, _ in sizes]
-    print("Figure 13: refill-on-read-miss impact")
-    print("Counter source: hardware counters printed by firmware")
-    print("Miss metric: 100 x core_out_miss / core_out")
-    print("Bandwidth overhead metric: 100 x cache_read_cache_miss / (cache_refill + cache_evict)")
+    print("# Figure 13: refill-on-read-miss impact")
+    print("**Counter source:** hardware counters printed by firmware")
+    print("**Miss metric:** 100 x core_out_miss / core_out")
+    print("**Bandwidth overhead metric:** 100 x cache_read_cache_miss / (cache_refill + cache_evict)")
     print()
     print_table("Measured", "Series", columns, measured)
     print_table("Paper", "Series", columns, paper)
@@ -343,16 +347,19 @@ def figure14():
     pdf = ROOT / "evaluation" / "figure14.pdf"
     if not pdf.is_file() or pdf.stat().st_size == 0:
         raise FileNotFoundError(f"Figure 14 PDF is missing: {pdf}")
-    print("Figure 14: phased instruction miss rate and IPC during Linux boot")
-    print("Counter source: periodic simulator counter snapshots")
-    print("RCache: 512KB, 8-way, refill-on-read-miss")
-    print("2-port: 2 banks; 3-port: 4 banks")
-    print("Plot series: 2-port miss rate, 3-port miss rate, IPC, IPC_lsu")
-    print(f"2-port snapshots: {two[0]} (cycles {two[1]} through {two[2]})")
-    print(f"3-port snapshots: {three[0]} (cycles {three[1]} through {three[2]})")
-    print(f"PDF: {pdf.relative_to(ROOT)} ({pdf.stat().st_size} bytes)")
+    print("# Figure 14: phased instruction miss rate and IPC during Linux boot")
+    print("**Counter source:** periodic simulator counter snapshots")
+    print("**RCache:** 512KB, 8-way, refill-on-read-miss")
+    print("**Ports:** 2-port uses 2 banks; 3-port uses 4 banks")
+    print("**Plot series:** 2-port miss rate, 3-port miss rate, IPC, IPC_lsu")
+    print(f"**2-port snapshots:** {two[0]} (cycles {two[1]} through {two[2]})")
+    print(f"**3-port snapshots:** {three[0]} (cycles {three[1]} through {three[2]})")
+    print(
+        f"**PDF:** [evaluation/figure14.pdf](figure14.pdf) "
+        f"({pdf.stat().st_size} bytes)"
+    )
     print()
-    print("Measured data provenance")
+    print("## Measured data provenance")
     print("Series | Simulator log | Calculation for each raw interval")
     print("--- | --- | ---")
     print(
@@ -366,11 +373,11 @@ def figure14():
     print(f"IPC | {raw_log(two_id, 'stderr.log')} | delta(core_out) / delta(cycle)")
     print(f"IPC_lsu | {raw_log(two_id, 'stderr.log')} | delta(core_out_load_store) / delta(cycle)")
     print(
-        "SVM/scripts/plot.py aggregates up to 64 adjacent raw intervals per "
-        "plotted point by summing their deltas."
+        "[SVM/scripts/plot.py](../SVM/scripts/plot.py) aggregates up to 64 "
+        "adjacent raw intervals per plotted point by summing their deltas."
     )
     print()
-    print("Paper data provenance")
+    print("## Paper data provenance")
     print(
         "The configurations and four displayed series are taken from paper "
         "Figure 14; it has no numeric Paper table."
@@ -453,13 +460,14 @@ def table4():
     actual = [value[1] for value in values]
     if actual != expected:
         raise ValueError(f"Table 4 source boundaries changed: got {actual}, expected {expected}")
-    print("Table 4: lines of Chisel code for RCore modules")
-    print("Counting method: physical source lines in the paper-listed class definitions.")
+    print("# Table 4: lines of Chisel code for RCore modules")
+    print("**Counting method:** physical source lines in the paper-listed class definitions.")
     print()
     print("Module | LoC | Source | Class definition")
     print("--- | --- | --- | ---")
     for module, count, source, definitions in values:
-        print(f"{module} | {count} | SVM/src/main/scala/{source} | {definitions}")
+        source_path = f"SVM/src/main/scala/{source}"
+        print(f"{module} | {count} | [{source_path}](../{source_path}) | {definitions}")
     print(f"Total | {sum(actual)} | - | -")
 
 

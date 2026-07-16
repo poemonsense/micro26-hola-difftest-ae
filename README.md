@@ -37,12 +37,12 @@ submodules. Command 2 downloads the complete build and simulation environment.
 Command 3 prepares dependencies, builds all emulators, runs the Linux workload,
 and writes:
 
-- `evaluation/figure11.txt`
-- `evaluation/figure12.txt`
-- `evaluation/figure13.txt`
-- `evaluation/figure14.txt`
+- `evaluation/figure11.md`
+- `evaluation/figure12.md`
+- `evaluation/figure13.md`
+- `evaluation/figure14.md`
 - `evaluation/figure14.pdf`
-- `evaluation/table4.txt`
+- `evaluation/table4.md`
 
 Figures 11-13 use the final hardware-counter values printed by the firmware.
 Figure 14 uses periodic simulator-counter snapshots to generate its curves.

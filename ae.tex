@@ -58,8 +58,8 @@ runs a Verilator simulator.  FPGA and Palladium platforms are not used.
   \item {\bf Execution:} Serialized emulator builds and parallel Verilator runs.
   \item {\bf Metrics:} Evict miss rate, instruction miss rate, refill bandwidth
         overhead, IPC, load/store IPC, and physical Chisel lines of code.
-  \item {\bf Output:} Four text tables, one generated Figure 14 PDF plot, one
-        LoC table, and raw logs.
+  \item {\bf Output:} Five Markdown reports, one generated Figure 14 PDF plot,
+        and raw logs.
   \item {\bf Experiments:} MICRO 2026 paper Figures 11--14 and Table 4.
   \item {\bf How much disk space required (approximately)?:} 20 GiB, including
         the Docker image, dependency caches, build products, and raw logs.
@@ -145,15 +145,15 @@ following stages; the reviewer does not invoke them separately:
 A successful complete run creates the following files:
 
 \begin{verbatim}
-evaluation/figure11.txt
-evaluation/figure12.txt
-evaluation/figure13.txt
-evaluation/figure14.txt
+evaluation/figure11.md
+evaluation/figure12.md
+evaluation/figure13.md
+evaluation/figure14.md
 evaluation/figure14.pdf
-evaluation/table4.txt
+evaluation/table4.md
 \end{verbatim}
 
-Each text report contains both measured values and the paper values, followed
+Each Markdown report contains both measured values and the paper values, followed
 by a comparison at the paper's displayed precision and the raw-log provenance
 and formula for each measured point.  The expected paper data are shown below.
 Figures 11--13 use the final hardware-counter values printed by the firmware;
