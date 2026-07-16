@@ -39,31 +39,22 @@ NutShell RISC-V processor used as the design under test, a Linux boot image,
 and an automated Artifact Evaluation workflow.  It reproduces the RCache
 trade-off data in Figures 11--13, the phased Linux-boot plot in Figure 14, and
 the RCore Chisel line counts in Table 4.  Every hardware experiment builds and
-runs a Verilator simulator.  FPGA and Palladium platforms are not used.  The
-manuscript is supplied separately by the evaluation system and is not an input
-to this artifact; all expected values are included below.
+runs a Verilator simulator.  FPGA and Palladium platforms are not used.
 
 \subsection{Artifact check-list (meta-information)}
 
 {\small
 \begin{itemize}
-  \item {\bf Algorithm:} HOLA hostless co-simulation, RCore, and RCache.
   \item {\bf Program:} SVM and NutShell, written in Chisel/Scala, SystemVerilog,
         C, C++, Python, and Bash.
   \item {\bf Compilation:} Mill, Chisel, LLVM/Clang or GCC, and Verilator.
-  \item {\bf Transformations:} Chisel elaboration, SVM/NutShell integration,
-        SystemVerilog generation, and Verilator C++ translation.
   \item {\bf Binary:} The repository includes the NutShell Linux boot image;
         all simulator binaries are built by the workflow.
-  \item {\bf Model:} HOLA SVM with RCore and RCache, co-simulated with the
-        NutShell design under test.
   \item {\bf Data set:} NutShell \texttt{ready-to-run/linux.bin}.
   \item {\bf Run-time environment:} OpenXiangShan xs-env, x86-64 Ubuntu 24.04
         Docker.
   \item {\bf Hardware:} A 16-core x86-64 host with at least 32 GiB RAM is
         recommended; no accelerator or programmable logic is required.
-  \item {\bf Run-time state:} A fresh container; build and run fingerprints are
-        persisted only in the mounted artifact directory for safe resumption.
   \item {\bf Execution:} Serialized emulator builds and parallel Verilator runs.
   \item {\bf Metrics:} Evict miss rate, instruction miss rate, refill bandwidth
         overhead, IPC, load/store IPC, and physical Chisel lines of code.
@@ -83,9 +74,6 @@ to this artifact; all expected values are included below.
   \item {\bf Code licenses (if publicly available)?:} Apache License 2.0 for SVM,
         Mulan PSL v2 for NutShell and difftest, and the license files shipped
         with other nested dependencies.
-  \item {\bf Data licenses (if publicly available)?:} The ready-to-run binaries
-        are distributed by the NutShell repository; no separate data-set license
-        is provided.
   \item {\bf Workflow automation framework used?:} Fail-fast Bash scripts plus
         Python reporting.
 \end{itemize}
@@ -128,30 +116,14 @@ experiments do not use an FPGA, Palladium, VCS, or any commercial EDA tool.
 The only host dependency is Docker.  The OpenXiangShan xs-env image provides
 the compiler toolchain, OpenJDK, Mill, and Verilator 5.048 or newer.  Inside the
 container, \texttt{setup/setup.sh} verifies those tools and installs only
-missing supporting packages such as Matplotlib.  It invokes the upstream
-\texttt{make init} targets in NutShell and SVM; SVM initializes its instruction
-semantics from pinned Spike commit
-\texttt{055624200a34bcc8d4c7acde}\allowbreak
-\texttt{040466f7d2001637}.
+missing supporting packages such as Matplotlib and initializes the two source
+submodules.
 
 \subsubsection{Data sets}
 
 All simulations boot \texttt{NutShell/ready-to-run/linux.bin}.  The workload
 boots Linux through the \texttt{/init} process, prints
 \texttt{Hello, RISC-V World!}, and exits through the simulator good-trap path.
-The image is included in the NutShell submodule; no external data download is
-needed after repository setup.  Its expected SHA-256 digest is
-\begin{center}
-\texttt{b69572d1eb82d2266212eb89d01086a9}\\
-\texttt{d9dd0d8caeacaeb5a59c819af015b4c9}
-\end{center}
-
-\subsubsection{Models}
-
-SVM is the synthesizable HOLA reference model.  RCore checks architectural
-register state and RCache reconstructs memory state from NutShell DUT events.
-The workflow generates each RCache variant from the fixed source revisions;
-there are no downloaded weights, checkpoints, or pretrained models.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Installation}
@@ -233,7 +205,7 @@ evaluation/table4.txt
 
 Each text report contains both measured values and the paper values, followed
 by the maximum absolute difference in percentage points.  The expected paper
-data are shown below, so generating reports never requires a manuscript PDF.
+data are shown below.
 
 \paragraph{Figure 11.}
 Evict miss rate is
@@ -346,26 +318,6 @@ Set \path{FORCE_REBUILD=1} or \path{FORCE_RERUN=1} to ignore successful
 fingerprints.  Set \path{KEEP_BUILD_WORK=1} to retain complete temporary
 source and compiler trees for debugging.  \path{FIGURE14_XMAX} changes the
 plot's maximum x-axis value (default 305).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Notes}
-
-\begin{sloppypar}
-All scripts fail fast.  Builds are serialized in configuration-specific source
-copies because upstream projects use fixed build paths; runs use independent
-binaries and result directories and are parallel-safe.  For setup failures,
-check container HTTPS and DNS access.  Build diagnostics are in
-\path{build/build-CONFIG/build.log}; simulation diagnostics are in
-\path{results/raw/CONFIG}.  Set \path{KEEP_BUILD_WORK=1} to retain generated
-sources for debugging.
-\end{sloppypar}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\enlargethispage{3\baselineskip}
-\subsection{Methodology}
-
-See the \href{https://www.acm.org/publications/policies/artifact-review-and-badging-current}{ACM badging policy} and
-\href{https://cTuning.org/ae}{cTuning AE methodology}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % When adding this appendix to your paper,
