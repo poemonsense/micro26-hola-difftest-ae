@@ -59,19 +59,65 @@ def print_table(title, column_title, columns, rows):
     print()
 
 
-def max_delta(measured_rows, paper_rows):
-    deltas = []
-    for (_, measured), (_, paper) in zip(measured_rows, paper_rows):
+def displayed_tables_match(measured_rows, paper_rows):
+    if len(measured_rows) != len(paper_rows):
+        return False
+    for (measured_label, measured), (paper_label, paper) in zip(measured_rows, paper_rows):
+        if measured_label != paper_label or len(measured) != len(paper):
+            return False
         for actual, expected in zip(measured, paper):
-            if actual is not None and expected is not None:
-                deltas.append(abs(actual - expected))
-    return max(deltas) if deltas else 0.0
+            if (actual is None) != (expected is None):
+                return False
+            if actual is not None and fmt(actual) != fmt(expected):
+                return False
+    return True
+
+
+def print_comparison(measured_rows, paper_rows):
+    if displayed_tables_match(measured_rows, paper_rows):
+        print(
+            "Comparison: All measured values match the paper at the displayed "
+            "precision (two decimal places)."
+        )
+    else:
+        print(
+            "Comparison: One or more measured values differ from the paper at "
+            "the displayed precision."
+        )
+
+
+def raw_log(config_id, filename="stdout.log"):
+    return f"results/raw/{config_id}/{filename}"
+
+
+def hex_counter(value):
+    return f"0x{value:016x}"
+
+
+def ratio_calculation(numerator_name, numerator, denominator_name, denominator, value):
+    return (
+        f"100 x {numerator_name}({hex_counter(numerator)}) / "
+        f"{denominator_name}({hex_counter(denominator)}) = {value:.6f}% -> {fmt(value)}"
+    )
+
+
+def print_provenance(entries, paper_source):
+    print()
+    print("Measured data provenance")
+    print("Point | Raw result | Calculation")
+    print("--- | --- | ---")
+    for point, source, calculation in entries:
+        print(f"{point} | {source} | {calculation}")
+    print()
+    print("Paper data provenance")
+    print(f"{paper_source} The expected values are declared in report/generate.py.")
 
 
 def figure11():
     sizes = [("256KB", "256k"), ("512KB", "512k"), ("1MB", "1m"), ("2MB", "2m")]
     ways = (4, 8, 16)
     measured = []
+    provenance = []
     for size_label, size_id in sizes:
         row = []
         for way in ways:
@@ -81,12 +127,26 @@ def figure11():
                 if not (result_dir / "success").is_file():
                     raise FileNotFoundError(f"expected-abort result is missing for {config_id}")
                 row.append(None)
+                provenance.append(
+                    (
+                        f"{size_label}/{way}-way",
+                        f"{raw_log(config_id)} and {raw_log(config_id, 'stderr.log')}",
+                        "expected cache-capacity abort -> X",
+                    )
+                )
                 continue
             values = hardware_counters(config_id)
-            row.append(
-                percent(
-                    counter(values, config_id, "cache_evict_miss"),
-                    counter(values, config_id, "cache_evict"),
+            numerator = counter(values, config_id, "cache_evict_miss")
+            denominator = counter(values, config_id, "cache_evict")
+            value = percent(numerator, denominator)
+            row.append(value)
+            provenance.append(
+                (
+                    f"{size_label}/{way}-way",
+                    raw_log(config_id),
+                    ratio_calculation(
+                        "cache_evict_miss", numerator, "cache_evict", denominator, value
+                    ),
                 )
             )
         measured.append((size_label, row))
@@ -103,30 +163,55 @@ def figure11():
     print()
     print_table("Measured", "Cache size", ["4-way", "8-way", "16-way"], measured)
     print_table("Paper", "Cache size", ["4-way", "8-way", "16-way"], paper)
+    print_comparison(measured, paper)
 
     plru_id = "c256k-w8-b4-p3-r0-plru"
     plru = hardware_counters(plru_id)
-    plru_rate = percent(
-        counter(plru, plru_id, "cache_evict_miss"),
-        counter(plru, plru_id, "cache_evict"),
+    plru_numerator = counter(plru, plru_id, "cache_evict_miss")
+    plru_denominator = counter(plru, plru_id, "cache_evict")
+    plru_rate = percent(plru_numerator, plru_denominator)
+    provenance.append(
+        (
+            "256KB/8-way PLRU",
+            raw_log(plru_id),
+            ratio_calculation(
+                "cache_evict_miss",
+                plru_numerator,
+                "cache_evict",
+                plru_denominator,
+                plru_rate,
+            ),
+        )
     )
     print(f"Supplementary 256KB 8-way PLRU: {fmt(plru_rate)} (paper text: 0.53%)")
-    print(f"Maximum absolute delta in the plotted table: {max_delta(measured, paper):.3f} percentage points")
+    print_provenance(
+        provenance,
+        "The Paper table is transcribed from paper Figure 11; the PLRU value is "
+        "from its accompanying text.",
+    )
 
 
 def figure12():
     sizes = [("256KB", "256k"), ("512KB", "512k"), ("1MB", "1m"), ("2MB", "2m")]
     variants = ((2, 2), (2, 3), (4, 2), (4, 3))
     measured = []
+    provenance = []
     for banks, ports in variants:
         row = []
-        for _, size_id in sizes:
+        for size_label, size_id in sizes:
             config_id = f"c{size_id}-w8-b{banks}-p{ports}-r0"
             values = hardware_counters(config_id)
-            row.append(
-                percent(
-                    counter(values, config_id, "core_out_miss"),
-                    counter(values, config_id, "core_out"),
+            numerator = counter(values, config_id, "core_out_miss")
+            denominator = counter(values, config_id, "core_out")
+            value = percent(numerator, denominator)
+            row.append(value)
+            provenance.append(
+                (
+                    f"{banks}-bank/{ports}-port, {size_label}",
+                    raw_log(config_id),
+                    ratio_calculation(
+                        "core_out_miss", numerator, "core_out", denominator, value
+                    ),
                 )
             )
         measured.append((f"{banks}-bank, {ports}-port", row))
@@ -144,7 +229,11 @@ def figure12():
     print()
     print_table("Measured", "Configuration", columns, measured)
     print_table("Paper", "Configuration", columns, paper)
-    print(f"Maximum absolute delta: {max_delta(measured, paper):.3f} percentage points")
+    print_comparison(measured, paper)
+    print_provenance(
+        provenance,
+        "The Paper table is transcribed from paper Figure 12.",
+    )
 
 
 def figure13():
@@ -152,28 +241,58 @@ def figure13():
     disabled = []
     enabled = []
     overhead = []
-    for _, size_id in sizes:
+    provenance = []
+    for size_label, size_id in sizes:
         disabled_id = f"c{size_id}-w8-b2-p2-r0"
         enabled_id = f"c{size_id}-w8-b2-p2-r1"
         disabled_values = hardware_counters(disabled_id)
         enabled_values = hardware_counters(enabled_id)
-        disabled.append(
-            percent(
-                counter(disabled_values, disabled_id, "core_out_miss"),
-                counter(disabled_values, disabled_id, "core_out"),
+        disabled_numerator = counter(disabled_values, disabled_id, "core_out_miss")
+        disabled_denominator = counter(disabled_values, disabled_id, "core_out")
+        disabled_value = percent(disabled_numerator, disabled_denominator)
+        disabled.append(disabled_value)
+        provenance.append(
+            (
+                f"disabled, {size_label}",
+                raw_log(disabled_id),
+                ratio_calculation(
+                    "core_out_miss",
+                    disabled_numerator,
+                    "core_out",
+                    disabled_denominator,
+                    disabled_value,
+                ),
             )
         )
-        enabled.append(
-            percent(
-                counter(enabled_values, enabled_id, "core_out_miss"),
-                counter(enabled_values, enabled_id, "core_out"),
+        enabled_numerator = counter(enabled_values, enabled_id, "core_out_miss")
+        enabled_denominator = counter(enabled_values, enabled_id, "core_out")
+        enabled_value = percent(enabled_numerator, enabled_denominator)
+        enabled.append(enabled_value)
+        provenance.append(
+            (
+                f"enabled, {size_label}",
+                raw_log(enabled_id),
+                ratio_calculation(
+                    "core_out_miss",
+                    enabled_numerator,
+                    "core_out",
+                    enabled_denominator,
+                    enabled_value,
+                ),
             )
         )
-        overhead.append(
-            percent(
-                counter(enabled_values, enabled_id, "cache_read_cache_miss"),
-                counter(enabled_values, enabled_id, "cache_refill")
-                + counter(enabled_values, enabled_id, "cache_evict"),
+        overhead_numerator = counter(enabled_values, enabled_id, "cache_read_cache_miss")
+        refill = counter(enabled_values, enabled_id, "cache_refill")
+        evict = counter(enabled_values, enabled_id, "cache_evict")
+        overhead_value = percent(overhead_numerator, refill + evict)
+        overhead.append(overhead_value)
+        provenance.append(
+            (
+                f"overhead, {size_label}",
+                raw_log(enabled_id),
+                f"100 x cache_read_cache_miss({hex_counter(overhead_numerator)}) / "
+                f"(cache_refill({hex_counter(refill)}) + cache_evict({hex_counter(evict)})) "
+                f"= {overhead_value:.6f}% -> {fmt(overhead_value)}",
             )
         )
 
@@ -191,7 +310,11 @@ def figure13():
     print()
     print_table("Measured", "Series", columns, measured)
     print_table("Paper", "Series", columns, paper)
-    print(f"Maximum absolute delta: {max_delta(measured, paper):.3f} percentage points")
+    print_comparison(measured, paper)
+    print_provenance(
+        provenance,
+        "The Paper table is transcribed from paper Figure 13.",
+    )
 
 
 def sample_summary(config_id):
@@ -213,8 +336,10 @@ def sample_summary(config_id):
 
 
 def figure14():
-    two = sample_summary("c512k-w8-b2-p2-r1")
-    three = sample_summary("c512k-w8-b4-p3-r1")
+    two_id = "c512k-w8-b2-p2-r1"
+    three_id = "c512k-w8-b4-p3-r1"
+    two = sample_summary(two_id)
+    three = sample_summary(three_id)
     pdf = ROOT / "evaluation" / "figure14.pdf"
     if not pdf.is_file() or pdf.stat().st_size == 0:
         raise FileNotFoundError(f"Figure 14 PDF is missing: {pdf}")
@@ -226,6 +351,30 @@ def figure14():
     print(f"2-port snapshots: {two[0]} (cycles {two[1]} through {two[2]})")
     print(f"3-port snapshots: {three[0]} (cycles {three[1]} through {three[2]})")
     print(f"PDF: {pdf.relative_to(ROOT)} ({pdf.stat().st_size} bytes)")
+    print()
+    print("Measured data provenance")
+    print("Series | Simulator log | Calculation for each raw interval")
+    print("--- | --- | ---")
+    print(
+        f"2-port miss rate | {raw_log(two_id, 'stderr.log')} | "
+        "100 x delta(core_out_miss) / delta(core_out)"
+    )
+    print(
+        f"3-port miss rate | {raw_log(three_id, 'stderr.log')} | "
+        "100 x delta(core_out_miss) / delta(core_out)"
+    )
+    print(f"IPC | {raw_log(two_id, 'stderr.log')} | delta(core_out) / delta(cycle)")
+    print(f"IPC_lsu | {raw_log(two_id, 'stderr.log')} | delta(core_out_load_store) / delta(cycle)")
+    print(
+        "SVM/scripts/plot.py aggregates up to 64 adjacent raw intervals per "
+        "plotted point by summing their deltas."
+    )
+    print()
+    print("Paper data provenance")
+    print(
+        "The configurations and four displayed series are taken from paper "
+        "Figure 14; it has no numeric Paper table."
+    )
 
 
 def lines(path):
@@ -310,7 +459,7 @@ def table4():
     print("Module | LoC | Source | Class definition")
     print("--- | --- | --- | ---")
     for module, count, source, definitions in values:
-        print(f"{module} | {count} | {source} | {definitions}")
+        print(f"{module} | {count} | SVM/src/main/scala/{source} | {definitions}")
     print(f"Total | {sum(actual)} | - | -")
 
 
