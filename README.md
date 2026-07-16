@@ -4,6 +4,17 @@ This repository reproduces Section 6.2 Figures 11-14 and Table 4 from the
 submitted HOLA paper. All hardware experiments use the NutShell Verilator
 simulator; no FPGA or Palladium access is required.
 
+The paper manuscript is intentionally not bundled with the artifact. The
+expected values and comparison criteria needed for evaluation are self-contained
+in [ae.tex](ae.tex) and the generated reports.
+
+## Get the artifact
+
+```bash
+git clone --recursive https://github.com/poemonsense/micro26-hola-difftest-ae
+cd micro26-hola-difftest-ae
+```
+
 ## One-command workflow
 
 Clone the repository recursively, enter the supplied Ubuntu 24.04 container,

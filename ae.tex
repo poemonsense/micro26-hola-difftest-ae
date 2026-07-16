@@ -1,20 +1,37 @@
-% ACM Artifact Evaluation appendix for HOLA.
-\documentclass[manuscript,screen,nonacm]{acmart}
+% LaTeX template for Artifact Evaluation V20240722
+%
+% Prepared by Grigori Fursin with contributions from Bruce Childers,
+%   Michael Heroux, Michela Taufer and other colleagues.
+%
+% See examples of this Artifact Appendix in
+%  * ASPLOS'24 "PyTorch 2: Faster Machine Learning Through Dynamic Python Bytecode Transformation and Graph Compilation":
+%      https://dl.acm.org/doi/10.1145/3620665.3640366
+%  * SC'17 paper: https://dl.acm.org/citation.cfm?id=3126948
+%  * CGO'17 paper: https://www.cl.cam.ac.uk/~sa614/papers/Software-Prefetching-CGO2017.pdf
+%  * ACM ReQuEST-ASPLOS'18 paper: https://dl.acm.org/citation.cfm?doid=3229762.3229763
+%
+% (C)opyright 2014-2024 cTuning.org
+%
+% CC BY 4.0 license
+%
 
-\usepackage{booktabs}
+\documentclass{sigplanconf}
+
 \usepackage{hyperref}
-\usepackage{listings}
-
-\settopmatter{printacmref=false,printfolios=true}
-\setcopyright{none}
-\title[HOLA Artifact]{HOLA Artifact Evaluation Appendix}
-\author{Anonymous Authors}
 
 \begin{document}
-\maketitle
+
+\special{papersize=8.5in,11in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% When adding this appendix to your paper,
+% please remove above part
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \appendix
 \section{Artifact Appendix}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Abstract}
 
 This artifact contains the HOLA synthesizable reference model (SVM), the
@@ -22,7 +39,9 @@ NutShell RISC-V processor used as the design under test, a Linux boot image,
 and an automated Artifact Evaluation workflow.  It reproduces the RCache
 trade-off data in Figures 11--13, the phased Linux-boot plot in Figure 14, and
 the RCore Chisel line counts in Table 4.  Every hardware experiment builds and
-runs a Verilator simulator.  FPGA and Palladium platforms are not used.
+runs a Verilator simulator.  FPGA and Palladium platforms are not used.  The
+manuscript is supplied separately by the evaluation system and is not an input
+to this artifact; all expected values are included below.
 
 \subsection{Artifact check-list (meta-information)}
 
@@ -30,52 +49,72 @@ runs a Verilator simulator.  FPGA and Palladium platforms are not used.
 \begin{itemize}
   \item {\bf Algorithm:} HOLA hostless co-simulation, RCore, and RCache.
   \item {\bf Program:} SVM and NutShell, written in Chisel/Scala, SystemVerilog,
-        C, C++, Python, and shell.
+        C, C++, Python, and Bash.
   \item {\bf Compilation:} Mill, Chisel, LLVM/Clang or GCC, and Verilator.
+  \item {\bf Transformations:} Chisel elaboration, SVM/NutShell integration,
+        SystemVerilog generation, and Verilator C++ translation.
   \item {\bf Binary:} The repository includes the NutShell Linux boot image;
         all simulator binaries are built by the workflow.
+  \item {\bf Model:} HOLA SVM with RCore and RCache, co-simulated with the
+        NutShell design under test.
   \item {\bf Data set:} NutShell \texttt{ready-to-run/linux.bin}.
-  \item {\bf Run-time environment:} OpenXiangShan x86-64 Ubuntu 24.04 Docker
-        container.
+  \item {\bf Run-time environment:} OpenXiangShan xs-env, x86-64 Ubuntu 24.04
+        Docker.
   \item {\bf Hardware:} A 16-core x86-64 host with at least 32 GiB RAM is
         recommended; no accelerator or programmable logic is required.
+  \item {\bf Run-time state:} A fresh container; build and run fingerprints are
+        persisted only in the mounted artifact directory for safe resumption.
   \item {\bf Execution:} Serialized emulator builds and parallel Verilator runs.
   \item {\bf Metrics:} Evict miss rate, instruction miss rate, refill bandwidth
         overhead, IPC, load/store IPC, and physical Chisel lines of code.
-  \item {\bf Output:} Four text tables, one PDF plot, one LoC table, and raw logs.
+  \item {\bf Output:} Four text tables, one generated Figure 14 PDF plot, one
+        LoC table, and raw logs.
   \item {\bf Experiments:} MICRO 2026 paper Figures 11--14 and Table 4.
-  \item {\bf Disk space required:} Approximately 20 GiB including the Docker
-        image, dependency caches, build products, and raw logs.
-  \item {\bf Preparation time:} Approximately 20--40 minutes, depending on
+  \item {\bf How much disk space required (approximately)?:} 20 GiB, including
+        the Docker image, dependency caches, build products, and raw logs.
+  \item {\bf How much time is needed to prepare workflow (approximately)?:}
+        20--40 minutes, depending on
         network and package-cache speed.
-  \item {\bf Experiment time:} Approximately 2--4 hours on a 16-core host.
-  \item {\bf Publicly available:} The source archive is supplied with the
-        artifact submission; the two pinned source components are public GitHub
-        repositories.
-  \item {\bf Code licenses:} SVM and NutShell license files are included in their
-        respective submodules.
-  \item {\bf Workflow automation:} Fail-fast Bash scripts plus Python reporting.
+  \item {\bf How much time is needed to complete experiments (approximately)?:}
+        2--4 hours on a 16-core host.
+  \item {\bf Publicly available?:} The artifact and pinned sources are on
+        \href{https://github.com/poemonsense/micro26-hola-difftest-ae}{GitHub};
+        an evaluation archive supports anonymous or offline access.
+  \item {\bf Code licenses (if publicly available)?:} Apache License 2.0 for SVM,
+        Mulan PSL v2 for NutShell and difftest, and the license files shipped
+        with other nested dependencies.
+  \item {\bf Data licenses (if publicly available)?:} The ready-to-run binaries
+        are distributed by the NutShell repository; no separate data-set license
+        is provided.
+  \item {\bf Workflow automation framework used?:} Fail-fast Bash scripts plus
+        Python reporting.
 \end{itemize}
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Description}
 
 \subsubsection{How to access}
 
 Obtain the artifact as a Git checkout and initialize its submodules
-recursively.  The evaluated revisions are
-NutShell commit
-\texttt{c1394855f28b301f5b2cb835ffa642e97bec43c4} from branch \texttt{svm}
-and SVM commit
-\texttt{0c5299a55f9a9c57acc81be36467b18eb7faa96f} from branch \texttt{main}.
-Clone the repository recursively when an artifact-service URL is available, or
-enter an existing Git checkout and initialize all nested sources:
+recursively.  The evaluated revisions are:
+\begin{itemize}
+  \item NutShell branch \texttt{svm}:\\
+        \texttt{c1394855f28b301f5b2cb835ffa642e97bec43c4}
+  \item SVM branch \texttt{main}:\\
+        \texttt{0c5299a55f9a9c57acc81be36467b18eb7faa96f}
+\end{itemize}
+Clone the public repository recursively, or enter an existing checkout and
+initialize all nested sources:
 
-\begin{lstlisting}[language=bash]
-git clone --recursive ARTIFACT_REPOSITORY_URL micro2026ae
-cd micro2026ae
-git submodule update --init --recursive
-\end{lstlisting}
+\begin{verbatim}
+git clone --recursive \
+  https://github.com/poemonsense/\
+micro26-hola-difftest-ae hola-ae
+cd hola-ae
+git submodule update --init \
+  --recursive
+\end{verbatim}
 
 \subsubsection{Hardware dependencies}
 
@@ -92,7 +131,8 @@ container, \texttt{setup/setup.sh} verifies those tools and installs only
 missing supporting packages such as Matplotlib.  It invokes the upstream
 \texttt{make init} targets in NutShell and SVM; SVM initializes its instruction
 semantics from pinned Spike commit
-\texttt{055624200a34bcc8d4c7acde\allowbreak040466f7d2001637}.
+\texttt{055624200a34bcc8d4c7acde}\allowbreak
+\texttt{040466f7d2001637}.
 
 \subsubsection{Data sets}
 
@@ -100,98 +140,117 @@ All simulations boot \texttt{NutShell/ready-to-run/linux.bin}.  The workload
 boots Linux through the \texttt{/init} process, prints
 \texttt{Hello, RISC-V World!}, and exits through the simulator good-trap path.
 The image is included in the NutShell submodule; no external data download is
-needed after repository setup.
+needed after repository setup.  Its expected SHA-256 digest is
+\begin{center}
+\texttt{b69572d1eb82d2266212eb89d01086a9}\\
+\texttt{d9dd0d8caeacaeb5a59c819af015b4c9}
+\end{center}
 
+\subsubsection{Models}
+
+SVM is the synthesizable HOLA reference model.  RCore checks architectural
+register state and RCache reconstructs memory state from NutShell DUT events.
+The workflow generates each RCache variant from the fixed source revisions;
+there are no downloaded weights, checkpoints, or pretrained models.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Installation}
 
 Pull the evaluated OpenXiangShan Ubuntu 24.04 image:
 
-\begin{lstlisting}[language=bash]
-docker pull ghcr.io/openxiangshan/xs-env:ubuntu-24.04
-\end{lstlisting}
+\begin{verbatim}
+docker pull \
+ghcr.io/openxiangshan/xs-env:ubuntu-24.04
+\end{verbatim}
 
-From the directory containing \texttt{micro2026ae/}, run the complete workflow
-in a fresh container.  The repository is mounted so that results remain on the
-host after the container exits.
+From the artifact repository root (the directory containing
+\texttt{run-all.sh}), run the complete workflow in a fresh container.  The
+repository is mounted so that results remain on the host after the container
+exits; the command does not depend on the host directory name.
 
-\begin{lstlisting}[language=bash]
-docker run --rm --name micro2026ae \
-  -v "$PWD/micro2026ae:/workspace/micro2026ae" \
-  -w /workspace/micro2026ae \
-  ghcr.io/openxiangshan/xs-env:ubuntu-24.04 \
+\begin{verbatim}
+docker run --rm --name hola-ae \
+  -v "$PWD:/ae" -w /ae \
+ghcr.io/openxiangshan/xs-env:ubuntu-24.04 \
   bash -lc './run-all.sh'
-\end{lstlisting}
+\end{verbatim}
 
 The container needs network access during setup for any missing Ubuntu
 packages, Spike, and uncached Scala dependencies.  No network access is
 required after
 \texttt{setup/setup.sh} has completed successfully.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment workflow}
 
 \texttt{run-all.sh} invokes the following four fail-fast stages:
 
+\begin{sloppypar}
 \begin{enumerate}
-  \item \texttt{setup/setup.sh} validates dependencies, initializes both
+  \item \path{setup/setup.sh} validates dependencies, initializes both
         upstream projects through their \texttt{make init} targets, and checks
         all fixed revisions.
-  \item \texttt{build/build.sh} elaborates NutShell once, then serially builds
+  \item \path{build/build.sh} elaborates NutShell once, then serially builds
         each unique RCache configuration.  Every temporary source tree,
         generated RTL, compiler output, emulator, and log lives below a
-        configuration-specific \texttt{build/build-*} directory.  Successful
+        configuration-specific \path{build/build-*} directory.  Successful
         configurations are fingerprinted and can be resumed safely.
-  \item \texttt{run/run.sh} boots Linux on every emulator.  Independent runs
-        execute in parallel and write raw logs below \texttt{results/raw}; the
-        requested \texttt{results/figure11} through
-        \texttt{results/figure14} directories contain links to the relevant
+  \item \path{run/run.sh} boots Linux on every emulator.  Independent runs
+        execute in parallel and write raw logs below \path{results/raw}; the
+        requested \path{results/figure11} through
+        \path{results/figure14} directories contain links to the relevant
         raw points.  A run is accepted only after a good trap, except for the
         documented 256 KiB/4-way capacity abort in Figure 11.
-  \item \texttt{report/report.sh} derives all metrics from cumulative counter logs,
+  \item \path{report/report.sh} derives all metrics from cumulative counter logs,
         validates the Figure 14 time series, invokes
-        \texttt{SVM/scripts/plot.py}, and counts Table 4 directly from the Scala
+        \path{SVM/scripts/plot.py}, and counts Table 4 directly from the Scala
         source.
 \end{enumerate}
+\end{sloppypar}
 
 The stages may also be run separately:
 
-\begin{lstlisting}[language=bash]
+\begin{verbatim}
 bash setup/setup.sh
 bash build/build.sh
 bash run/run.sh
 bash report/report.sh
-\end{lstlisting}
+\end{verbatim}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Evaluation and expected results}
 
 A successful complete run creates the following files:
 
-\begin{lstlisting}
+\begin{verbatim}
 evaluation/figure11.txt
 evaluation/figure12.txt
 evaluation/figure13.txt
 evaluation/figure14.txt
 evaluation/figure14.pdf
 evaluation/table4.txt
-\end{lstlisting}
+\end{verbatim}
 
 Each text report contains both measured values and the paper values, followed
 by the maximum absolute difference in percentage points.  The expected paper
-data are shown below.
+data are shown below, so generating reports never requires a manuscript PDF.
 
 \paragraph{Figure 11.}
 Evict miss rate is
-$100\times\mathtt{cache\_evict\_miss}/\mathtt{cache\_evict}$.
+\[
+100\times\mathtt{cache\_evict\_miss}/\mathtt{cache\_evict}.
+\]
 
 \begin{center}
 \begin{tabular}{lrrr}
-\toprule
+\hline
 Cache & 4-way & 8-way & 16-way \\
-\midrule
+\hline
 256 KiB & X & 2.76\% & 3.42\% \\
 512 KiB & 0.60\% & 0.41\% & 0.36\% \\
 1 MiB   & 0.06\% & 0.01\% & 0.00\% \\
 2 MiB   & 0.02\% & 0.00\% & 0.00\% \\
-\bottomrule
+\hline
 \end{tabular}
 \end{center}
 
@@ -201,18 +260,20 @@ non-replaceable.  The supplementary PLRU point reported in the paper text is
 
 \paragraph{Figure 12.}
 Instruction miss rate is
-$100\times\mathtt{core\_out\_miss}/\mathtt{core\_out}$.
+\[
+100\times\mathtt{core\_out\_miss}/\mathtt{core\_out}.
+\]
 
 \begin{center}
 \begin{tabular}{lrrrr}
-\toprule
+\hline
 Configuration & 256 KiB & 512 KiB & 1 MiB & 2 MiB \\
-\midrule
+\hline
 2-bank, 2-port & 18.32\% & 2.08\% & 0.20\% & 0.19\% \\
 2-bank, 3-port & 18.18\% & 1.89\% & 0.02\% & 0.00\% \\
 4-bank, 2-port & 18.27\% & 2.00\% & 0.12\% & 0.11\% \\
 4-bank, 3-port & 18.18\% & 1.89\% & 0.01\% & 0.00\% \\
-\bottomrule
+\hline
 \end{tabular}
 \end{center}
 
@@ -227,18 +288,18 @@ overhead is
 
 \begin{center}
 \begin{tabular}{lrrrr}
-\toprule
+\hline
 Series & 256 KiB & 512 KiB & 1 MiB & 2 MiB \\
-\midrule
+\hline
 Disabled & 18.32\% & 2.08\% & 0.20\% & 0.19\% \\
 Enabled  & 0.70\% & 0.26\% & 0.19\% & 0.19\% \\
 Overhead & 2.70\% & 0.41\% & 0.00\% & 0.00\% \\
-\bottomrule
+\hline
 \end{tabular}
 \end{center}
 
 \paragraph{Figure 14.}
-\texttt{evaluation/figure14.pdf} contains exactly the paper's four displayed
+\path{evaluation/figure14.pdf} contains exactly the paper's four displayed
 series: 2-port miss rate, 3-port miss rate, IPC, and load/store IPC.  The plot
 should cover approximately $300\times2^{16}$ reference cycles and show the
 large early 2-port spikes removed by the third port.  The plotting command does
@@ -250,9 +311,9 @@ Both Figure 14 runs use a 512 KiB, 8-way cache with refill-on-read-miss.  The
 three-port design.
 
 The evaluated build keeps the RTL's 1,024-cycle counter snapshots but disables
-the bootrom's final UART counter dump.  This is the no-performance-counter-output
-variant used for Figure 14; it avoids adding a long diagnostic dump after the
-Linux workload while retaining the samples required by \texttt{plot.py}.
+the bootrom's final UART counter dump.  This Figure 14 variant suppresses final
+performance-counter output, avoiding a long diagnostic dump after the Linux
+workload while retaining the samples required by \path{plot.py}.
 
 \paragraph{Table 4.}
 The expected module counts are 253, 61, 52, 126, 87, 154, 49, 25, and 129
@@ -261,49 +322,54 @@ respectively, totaling 936 physical Chisel source lines.  The report excludes
 the later Figure 14-only instrumentation and fails if any source boundary has
 changed.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment customization}
 
-Set \texttt{AE\_RUN\_JOBS=N} to change simulator concurrency.  Set
-\texttt{AE\_RUN\_TIMEOUT} to change the per-run timeout in seconds (default:
+Set \path{AE_RUN_JOBS=N} to change simulator concurrency.  Set
+\path{AE_RUN_TIMEOUT} to change the per-run timeout in seconds (default:
 3,600).  A
 space-separated subset of configuration identifiers may be supplied through
-\texttt{AE\_CONFIGS}; identifiers are listed in
-\texttt{experiments/configs.tsv}.  For example:
+\path{AE_CONFIGS}; identifiers are listed in
+\path{experiments/configs.tsv}.  For example:
 
-\begin{lstlisting}[language=bash]
-AE_CONFIGS="c512k-w8-b2-p2-r1 c512k-w8-b4-p3-r1" \
-  bash build/build.sh
-AE_CONFIGS="c512k-w8-b2-p2-r1 c512k-w8-b4-p3-r1" \
-  AE_RUN_JOBS=2 bash run/run.sh
+\begin{verbatim}
+AE_CONFIGS="c512k-w8-b2-p2-r1 \
+ c512k-w8-b4-p3-r1" \
+ bash build/build.sh
+AE_CONFIGS="c512k-w8-b2-p2-r1 \
+ c512k-w8-b4-p3-r1" \
+ AE_RUN_JOBS=2 bash run/run.sh
 bash report/report-figure14.sh
-\end{lstlisting}
+\end{verbatim}
 
-Set \texttt{FORCE\_REBUILD=1} or \texttt{FORCE\_RERUN=1} to ignore successful
-fingerprints.  Set \texttt{KEEP\_BUILD\_WORK=1} to retain complete temporary
-source and compiler trees for debugging.  \texttt{FIGURE14\_XMAX} changes the
+Set \path{FORCE_REBUILD=1} or \path{FORCE_RERUN=1} to ignore successful
+fingerprints.  Set \path{KEEP_BUILD_WORK=1} to retain complete temporary
+source and compiler trees for debugging.  \path{FIGURE14_XMAX} changes the
 plot's maximum x-axis value (default 305).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Notes}
 
-All scripts use \texttt{set -Eeuo pipefail}; an unexpected dependency,
-compilation, simulation, or reporting failure stops the complete workflow.
-Builds are intentionally serialized because both upstream projects normally
-write fixed \texttt{build/} paths.  This artifact avoids interference by using
-configuration-specific source copies.  Runs use separate emulator binaries and
-result directories and are therefore parallel-safe.
+\begin{sloppypar}
+All scripts fail fast.  Builds are serialized in configuration-specific source
+copies because upstream projects use fixed build paths; runs use independent
+binaries and result directories and are parallel-safe.  For setup failures,
+check container HTTPS and DNS access.  Build diagnostics are in
+\path{build/build-CONFIG/build.log}; simulation diagnostics are in
+\path{results/raw/CONFIG}.  Set \path{KEEP_BUILD_WORK=1} to retain generated
+sources for debugging.
+\end{sloppypar}
 
-If setup cannot download dependencies, first verify that the Docker container
-has outbound HTTPS and DNS access.  If a simulator fails, inspect
-\path{results/raw/CONFIG/stdout.log} and \path{stderr.log}.  If a build
-fails, inspect \path{build/build-CONFIG/build.log}; rerun that configuration
-with \texttt{KEEP\_BUILD\_WORK=1} to retain its generated source tree.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\enlargethispage{3\baselineskip}
 \subsection{Methodology}
 
-Submission, reviewing, and badging follow the ACM policy:
-\begin{itemize}
-  \item \url{https://www.acm.org/publications/policies/artifact-review-and-badging-current}
-  \item \url{https://cTuning.org/ae}
-\end{itemize}
+See the \href{https://www.acm.org/publications/policies/artifact-review-and-badging-current}{ACM badging policy} and
+\href{https://cTuning.org/ae}{cTuning AE methodology}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% When adding this appendix to your paper,
+% please remove below part
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
