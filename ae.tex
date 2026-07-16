@@ -92,16 +92,16 @@ recursively.  The evaluated revisions are:
   \item SVM branch \texttt{main}:\\
         \texttt{0c5299a55f9a9c57acc81be36467b18eb7faa96f}
 \end{itemize}
-Clone the public repository recursively, or enter an existing checkout and
-initialize all nested sources:
+Run the following three numbered commands in order.  No other commands are
+required for the complete evaluation.
+
+\noindent\fbox{\textbf{Command 1}}\quad\textbf{Clone and enter the artifact.}
 
 \begin{verbatim}
 git clone --recursive \
   https://github.com/poemonsense/\
-micro26-hola-difftest-ae hola-ae
-cd hola-ae
-git submodule update --init \
-  --recursive
+micro26-hola-difftest-ae
+cd micro26-hola-difftest-ae
 \end{verbatim}
 
 \subsubsection{Hardware dependencies}
@@ -128,17 +128,25 @@ boots Linux through the \texttt{/init} process, prints
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Installation}
 
-Pull the evaluated OpenXiangShan Ubuntu 24.04 image:
+Run Command 2 from the artifact repository root.
+
+\noindent\fbox{\textbf{Command 2}}\quad\textbf{Pull the Docker environment.}
 
 \begin{verbatim}
 docker pull \
 ghcr.io/openxiangshan/xs-env:ubuntu-24.04
 \end{verbatim}
 
-From the artifact repository root (the directory containing
-\texttt{run-all.sh}), run the complete workflow in a fresh container.  The
-repository is mounted so that results remain on the host after the container
-exits; the command does not depend on the host directory name.
+The initial run requires network access for missing packages and uncached
+dependencies.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experiment workflow}
+
+Run Command 3 from the artifact repository root.  It executes the complete AE
+workflow; no additional commands are required.
+
+\noindent\fbox{\textbf{Command 3}}\quad\textbf{Run the complete AE workflow.}
 
 \begin{verbatim}
 docker run --rm --name hola-ae \
@@ -147,15 +155,8 @@ ghcr.io/openxiangshan/xs-env:ubuntu-24.04 \
   bash -lc './run-all.sh'
 \end{verbatim}
 
-The container needs network access during setup for any missing Ubuntu
-packages, Spike, and uncached Scala dependencies.  No network access is
-required after
-\texttt{setup/setup.sh} has completed successfully.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Experiment workflow}
-
-\texttt{run-all.sh} invokes the following four fail-fast stages:
+\paragraph{Additional explanation (no action required).}
+Command 3 automatically invokes four fail-fast stages:
 
 \begin{sloppypar}
 \begin{enumerate}
@@ -179,15 +180,6 @@ required after
         source.
 \end{enumerate}
 \end{sloppypar}
-
-The stages may also be run separately:
-
-\begin{verbatim}
-bash setup/setup.sh
-bash build/build.sh
-bash run/run.sh
-bash report/report.sh
-\end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Evaluation and expected results}
@@ -290,34 +282,7 @@ workload while retaining the samples required by \path{plot.py}.
 \paragraph{Table 4.}
 The expected module counts are 253, 61, 52, 126, 87, 154, 49, 25, and 129
 lines for MMU, FETCH, AGU, LSU, ARITH, PRIV, TRAP, COMMIT, and RCore,
-respectively, totaling 936 physical Chisel source lines.  The report excludes
-the later Figure 14-only instrumentation and fails if any source boundary has
-changed.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Experiment customization}
-
-Set \path{AE_RUN_JOBS=N} to change simulator concurrency.  Set
-\path{AE_RUN_TIMEOUT} to change the per-run timeout in seconds (default:
-3,600).  A
-space-separated subset of configuration identifiers may be supplied through
-\path{AE_CONFIGS}; identifiers are listed in
-\path{experiments/configs.tsv}.  For example:
-
-\begin{verbatim}
-AE_CONFIGS="c512k-w8-b2-p2-r1 \
- c512k-w8-b4-p3-r1" \
- bash build/build.sh
-AE_CONFIGS="c512k-w8-b2-p2-r1 \
- c512k-w8-b4-p3-r1" \
- AE_RUN_JOBS=2 bash run/run.sh
-bash report/report-figure14.sh
-\end{verbatim}
-
-Set \path{FORCE_REBUILD=1} or \path{FORCE_RERUN=1} to ignore successful
-fingerprints.  Set \path{KEEP_BUILD_WORK=1} to retain complete temporary
-source and compiler trees for debugging.  \path{FIGURE14_XMAX} changes the
-plot's maximum x-axis value (default 305).
+respectively, totaling 936 physical Chisel source lines.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % When adding this appendix to your paper,
