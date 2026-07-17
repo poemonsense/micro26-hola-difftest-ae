@@ -162,8 +162,8 @@ def figure11():
         ("2MB", [0.02, 0.00, 0.00]),
     ]
     print("# Figure 11: evict miss rate")
-    print("**Counter source:** hardware counters printed by firmware")
-    print("**Metric:** 100 x cache_evict_miss / cache_evict")
+    print("- **Counter source:** hardware counters printed by firmware")
+    print("- **Metric:** 100 x cache_evict_miss / cache_evict")
     print()
     print_table("Measured", "Cache size", ["4-way", "8-way", "16-way"], measured)
     print_table("Paper", "Cache size", ["4-way", "8-way", "16-way"], paper)
@@ -187,6 +187,7 @@ def figure11():
             ),
         )
     )
+    print()
     print(f"**Supplementary 256KB 8-way PLRU:** {fmt(plru_rate)} (paper text: 0.53%)")
     print_provenance(
         provenance,
@@ -228,8 +229,8 @@ def figure12():
     ]
     columns = [label for label, _ in sizes]
     print("# Figure 12: instruction miss rate")
-    print("**Counter source:** hardware counters printed by firmware")
-    print("**Metric:** 100 x core_out_miss / core_out")
+    print("- **Counter source:** hardware counters printed by firmware")
+    print("- **Metric:** 100 x core_out_miss / core_out")
     print()
     print_table("Measured", "Configuration", columns, measured)
     print_table("Paper", "Configuration", columns, paper)
@@ -308,9 +309,9 @@ def figure13():
     ]
     columns = [label for label, _ in sizes]
     print("# Figure 13: refill-on-read-miss impact")
-    print("**Counter source:** hardware counters printed by firmware")
-    print("**Miss metric:** 100 x core_out_miss / core_out")
-    print("**Bandwidth overhead metric:** 100 x cache_read_cache_miss / (cache_refill + cache_evict)")
+    print("- **Counter source:** hardware counters printed by firmware")
+    print("- **Miss metric:** 100 x core_out_miss / core_out")
+    print("- **Bandwidth overhead metric:** 100 x cache_read_cache_miss / (cache_refill + cache_evict)")
     print()
     print_table("Measured", "Series", columns, measured)
     print_table("Paper", "Series", columns, paper)
@@ -348,14 +349,14 @@ def figure14():
     if not pdf.is_file() or pdf.stat().st_size == 0:
         raise FileNotFoundError(f"Figure 14 PDF is missing: {pdf}")
     print("# Figure 14: phased instruction miss rate and IPC during Linux boot")
-    print("**Counter source:** periodic simulator counter snapshots")
-    print("**RCache:** 512KB, 8-way, refill-on-read-miss")
-    print("**Ports:** 2-port uses 2 banks; 3-port uses 4 banks")
-    print("**Plot series:** 2-port miss rate, 3-port miss rate, IPC, IPC_lsu")
-    print(f"**2-port snapshots:** {two[0]} (cycles {two[1]} through {two[2]})")
-    print(f"**3-port snapshots:** {three[0]} (cycles {three[1]} through {three[2]})")
+    print("- **Counter source:** periodic simulator counter snapshots")
+    print("- **RCache:** 512KB, 8-way, refill-on-read-miss")
+    print("- **Ports:** 2-port uses 2 banks; 3-port uses 4 banks")
+    print("- **Plot series:** 2-port miss rate, 3-port miss rate, IPC, IPC_lsu")
+    print(f"- **2-port snapshots:** {two[0]} (cycles {two[1]} through {two[2]})")
+    print(f"- **3-port snapshots:** {three[0]} (cycles {three[1]} through {three[2]})")
     print(
-        f"**PDF:** [evaluation/figure14.pdf](figure14.pdf) "
+        f"- **PDF:** [evaluation/figure14.pdf](figure14.pdf) "
         f"({pdf.stat().st_size} bytes)"
     )
     print()
