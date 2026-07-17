@@ -31,65 +31,52 @@
 \appendix
 \section{Artifact Appendix}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Abstract}
+\subsection{Overview}
 
-This artifact contains the HOLA synthesizable reference model (SVM), the
-NutShell RISC-V processor used as the design under test, a Linux boot image,
-and an automated Artifact Evaluation workflow.  It reproduces the RCache
-trade-off data in Figures 11--13, the phased Linux-boot plot in Figure 14, and
-the RCore Chisel line counts in Table 4.  Every hardware experiment builds and
-runs a Verilator simulator.  FPGA and Palladium platforms are not used.
+This artifact reproduces the HOLA results in Section 6.2: the RCache trade-off
+data in Figures 11--13, the phased Linux-boot plot in Figure 14, and the RCore
+Chisel line counts in Table 4. It includes the HOLA synthesizable reference
+model (SVM), the NutShell RISC-V processor, a Linux boot image, and an automated
+evaluation workflow. All hardware experiments use Verilator; no FPGA or
+Palladium access is required.
 
-\subsection{Artifact check-list (meta-information)}
+\subsection{Artifact Metadata}
 
 {\small
 \begin{itemize}
-  \item {\bf Program:} SVM and NutShell, written in Chisel/Scala, SystemVerilog,
-        C, C++, Python, and Bash.
-  \item {\bf Compilation:} Mill, Chisel, LLVM/Clang or GCC, and Verilator.
-  \item {\bf Binary:} The repository includes the NutShell Linux boot image;
-        all simulator binaries are built by the workflow.
-  \item {\bf Data set:} NutShell \texttt{ready-to-run/linux.bin}.
-  \item {\bf Run-time environment:} OpenXiangShan xs-env, x86-64 Ubuntu 24.04
-        Docker.
-  \item {\bf Hardware:} A 16-core x86-64 host with at least 32 GiB RAM is
-        recommended; no accelerator or programmable logic is required.
-  \item {\bf Execution:} Serialized emulator builds and parallel Verilator runs.
-  \item {\bf Metrics:} Evict miss rate, instruction miss rate, refill bandwidth
-        overhead, IPC, load/store IPC, and physical Chisel lines of code.
-  \item {\bf Output:} Five Markdown reports, one generated Figure 14 PDF plot,
-        and raw logs.
-  \item {\bf Experiments:} MICRO 2026 paper Figures 11--14 and Table 4.
-  \item {\bf How much disk space required (approximately)?:} 20 GiB, including
-        the Docker image, dependency caches, build products, and raw logs.
-  \item {\bf How much time is needed to prepare workflow (approximately)?:}
-        20--40 minutes, depending on
-        network and package-cache speed.
-  \item {\bf How much time is needed to complete experiments (approximately)?:}
-        2--4 hours on a 16-core host.
-  \item {\bf Publicly available?:} The artifact and pinned sources are on
-        \href{https://github.com/poemonsense/micro26-hola-difftest-ae}{GitHub};
-        the archival release is available at
-        \href{https://doi.org/10.5281/zenodo.XXXXXXX}{Zenodo}; an evaluation
-        archive supports anonymous or offline access.
-  \item {\bf Code licenses (if publicly available)?:} Apache License 2.0 for SVM,
-        Mulan PSL v2 for NutShell and difftest, and the license files shipped
-        with other nested dependencies.
-  \item {\bf Workflow automation framework used?:} Fail-fast Bash scripts plus
-        Python reporting.
+  \item \textbf{Sources:} SVM, NutShell, and their nested dependencies,
+        initialized by the recursive checkout.
+  \item \textbf{Workload:} NutShell \path{ready-to-run/linux.bin}; all
+        simulator binaries are built by the workflow.
+  \item \textbf{Scope:} 31 configurations: 30 expected-good runs and one
+        expected cache-capacity abort.
+  \item \textbf{Environment:} OpenXiangShan xs-env (x86-64 Ubuntu 24.04) via
+        Docker. The workflow builds the required local image automatically.
+  \item \textbf{Toolchain:} Mill, Chisel, Verilator, a RISC-V cross compiler,
+        C/C++ build tools, Python, and matplotlib; all are provisioned by the
+        Docker image.
+  \item \textbf{Hardware:} A 16-core x86-64 host with at least 32 GiB RAM is
+        recommended. No accelerator or programmable logic is required.
+  \item \textbf{Storage:} Approximately 20 GiB for Docker images, caches,
+        build products, and raw logs.
+  \item \textbf{Preparation time:} Approximately 20--40 minutes, depending on
+        network and package-cache performance.
+  \item \textbf{Experiment time:} Approximately 2--4 hours on a 16-core host.
+  \item \textbf{Outputs:} Raw logs, five Markdown reports, and one Figure 14
+        PDF plot.
+  \item \textbf{Availability:} The artifact and pinned sources are available at
+        \href{https://github.com/poemonsense/micro26-hola-difftest-ae}{GitHub}.
+  \item \textbf{Licenses:} Apache License 2.0 for SVM and Mulan PSL v2 for
+        NutShell and difftest; nested dependencies include their license files.
 \end{itemize}
 }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Description}
+\subsection{Running the Artifact}
 
-\subsubsection{Required commands}
+The host requires Git and Docker Engine with Linux-container support. Run the
+following two commands in order.
 
-Run only the following three numbered commands, in order, to complete the
-evaluation.
-
-\noindent\fbox{\textbf{Command 1}}\quad\textbf{Clone and enter the artifact.}
+\paragraph{Command 1: Clone and enter the artifact.}
 
 \begin{verbatim}
 git clone --recursive \
@@ -98,53 +85,25 @@ micro26-hola-difftest-ae
 cd micro26-hola-difftest-ae
 \end{verbatim}
 
-\noindent\fbox{\textbf{Command 2}}\quad\textbf{Pull the Docker environment.}
+\paragraph{Command 2: Run the complete evaluation.}
 
 \begin{verbatim}
-docker pull \
-ghcr.io/openxiangshan/xs-env:ubuntu-24.04
+./run-all.sh
 \end{verbatim}
 
-\noindent\fbox{\textbf{Command 3}}\quad\textbf{Run the complete AE workflow.}
+\path{run-all.sh} builds the Docker environment and starts the evaluation.
+Inside the container, \path{artifact-evaluation.sh} performs four fail-fast
+stages:
 
-\begin{verbatim}
-docker run --rm --name hola-ae \
-  -v "$PWD:/ae" -w /ae \
-ghcr.io/openxiangshan/xs-env:ubuntu-24.04 \
-  bash -lc './run-all.sh'
-\end{verbatim}
-
-\subsubsection{Command explanation (no action required)}
-
-\paragraph{Command 1.}
-Clones the artifact and its pinned NutShell and SVM submodules.
-
-\paragraph{Command 2.}
-Downloads the OpenXiangShan xs-env image containing the complete build and
-simulation environment.
-
-\paragraph{Command 3.}
-Starts the complete evaluation.  The workflow automatically performs the
-following stages; the reviewer does not invoke them separately:
-
-\begin{sloppypar}
 \begin{enumerate}
-  \item \path{setup/setup.sh} checks the environment and initializes the pinned
-        source projects.
-  \item \path{build/build.sh} builds the Verilator simulators needed by all
-        evaluated RCache configurations.
-  \item \path{run/run.sh} boots
-        \path{NutShell/ready-to-run/linux.bin} on each simulator and records the
-        firmware output and simulator snapshots.
-  \item \path{report/report.sh} computes the metrics and generates the Figure
-        11--14 and Table 4 evaluation files listed in Section A.4.
+  \item Validate the environment and initialize the pinned sources.
+  \item Build the Verilator simulators for all RCache configurations.
+  \item Boot \path{NutShell/ready-to-run/linux.bin} on each simulator and
+        capture firmware output and simulator-counter snapshots.
+  \item Compute the metrics and generate the reports.
 \end{enumerate}
-\end{sloppypar}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Evaluation and expected results}
-
-A successful complete run creates the following files:
+A successful run creates:
 
 \begin{verbatim}
 evaluation/figure11.md
@@ -155,14 +114,15 @@ evaluation/figure14.pdf
 evaluation/table4.md
 \end{verbatim}
 
-Each Markdown report contains both measured values and the paper values, followed
-by a comparison at the paper's displayed precision and the raw-log provenance
-and formula for each measured point.  The expected paper data are shown below.
-Figures 11--13 use the final hardware-counter values printed by the firmware;
-Figure 14 uses periodic simulator-counter snapshots.
+The Markdown reports include measured values, paper values, raw-log provenance,
+and the calculation for each measured point. Figures 11--13 use final hardware
+counters printed by the firmware. Figure 14 uses periodic simulator-counter
+snapshots.
 
-\paragraph{Figure 11.}
-Evict miss rate is
+\subsection{Expected Results}
+
+\paragraph{Figure 11: evict miss rate.}
+The metric is
 \[
 100\times\mathtt{cache\_evict\_miss}/\mathtt{cache\_evict}.
 \]
@@ -180,12 +140,12 @@ Cache & 4-way & 8-way & 16-way \\
 \end{tabular}
 \end{center}
 
-The X is an expected abort because every block becomes dirty and
-non-replaceable.  The supplementary PLRU point reported in the paper text is
-0.53\% for the 256 KiB/8-way configuration.
+The X is the expected abort for the 256 KiB/4-way configuration, where every
+block becomes dirty and non-replaceable. The supplementary 256 KiB/8-way PLRU
+point is 0.53\%.
 
-\paragraph{Figure 12.}
-Instruction miss rate is
+\paragraph{Figure 12: instruction miss rate.}
+The metric is
 \[
 100\times\mathtt{core\_out\_miss}/\mathtt{core\_out}.
 \]
@@ -203,8 +163,8 @@ Configuration & 256 KiB & 512 KiB & 1 MiB & 2 MiB \\
 \end{tabular}
 \end{center}
 
-\paragraph{Figure 13.}
-The disabled and enabled rows use the Figure 12 miss metric.  Bandwidth
+\paragraph{Figure 13: refill-on-read-miss.}
+The disabled and enabled rows use the Figure 12 miss-rate metric. Bandwidth
 overhead is
 \[
 100\times
@@ -224,26 +184,20 @@ Overhead & 2.70\% & 0.41\% & 0.00\% & 0.00\% \\
 \end{tabular}
 \end{center}
 
-\paragraph{Figure 14.}
-\path{evaluation/figure14.pdf} contains exactly the paper's four displayed
-series: 2-port miss rate, 3-port miss rate, IPC, and load/store IPC.  The plot
-should cover approximately $300\times2^{16}$ reference cycles and show the
-large early 2-port spikes removed by the third port.  The plotting command does
-not add the other diagnostic performance-counter series available in
-\texttt{plot.py}.
+\paragraph{Figure 14: phased Linux-boot behavior.}
+The Figure 14 PDF contains the four paper series: 2-port miss rate, 3-port miss
+rate, IPC, and load/store IPC. The plot covers approximately
+$300\times2^{16}$ reference cycles and should show the large early 2-port miss
+spikes removed by the third port.
 
-Both Figure 14 runs use a 512 KiB, 8-way cache with refill-on-read-miss.  The
-2-port point uses two banks; the 3-port point uses the paper's four-bank,
-three-port design.
+Both runs use a 512 KiB, 8-way cache with refill-on-read-miss. The 2-port run
+uses two banks; the 3-port run uses four banks. Curves are derived from the
+RTL's 1,024-cycle simulator-counter snapshots.
 
-The Figure 14 plot uses the RTL's 1,024-cycle simulator-counter snapshots.  The
-final hardware-counter values printed by the firmware in the same runs are not
-inputs to these curves.
-
-\paragraph{Table 4.}
-The expected module counts are 253, 61, 52, 126, 87, 154, 49, 25, and 129
-lines for MMU, FETCH, AGU, LSU, ARITH, PRIV, TRAP, COMMIT, and RCore,
-respectively, totaling 936 physical Chisel source lines.
+\paragraph{Table 4: RCore Chisel lines.}
+The expected counts for MMU, FETCH, AGU, LSU, ARITH, PRIV, TRAP, COMMIT, and
+RCore are 253, 61, 52, 126, 87, 154, 49, 25, and 129 physical source lines,
+respectively, totaling 936 lines.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % When adding this appendix to your paper,

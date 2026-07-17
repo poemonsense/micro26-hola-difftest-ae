@@ -6,7 +6,11 @@ simulator; no FPGA or Palladium access is required.
 
 ## Required commands
 
-Run only these three commands, in order, to complete the evaluation.
+Docker Engine with Linux-container support is required. The image-build stage
+installs OS packages as root inside a Docker build layer; the artifact workflow
+itself runs as the host UID/GID and does not write root-owned files.
+
+Run only these two commands, in order, to complete the evaluation.
 
 ### Command 1: Get the artifact
 
@@ -15,27 +19,19 @@ git clone --recursive https://github.com/poemonsense/micro26-hola-difftest-ae
 cd micro26-hola-difftest-ae
 ```
 
-### Command 2: Pull the environment
+### Command 2: Build and run the non-root evaluation
 
 ```bash
-docker pull ghcr.io/openxiangshan/xs-env:ubuntu-24.04
-```
-
-### Command 3: Run the complete evaluation
-
-```bash
-docker run --rm --name hola-ae \
-  -v "$PWD:/ae" -w /ae \
-  ghcr.io/openxiangshan/xs-env:ubuntu-24.04 \
-  bash -lc './run-all.sh'
+./run-all.sh
 ```
 
 ## What the commands do
 
 No additional action is required. Command 1 obtains the artifact and its pinned
-submodules. Command 2 downloads the complete build and simulation environment.
-Command 3 prepares dependencies, builds all emulators, runs the Linux workload,
-and writes:
+submodules. Command 2 runs `run-all.sh`, which prints two progress stages: it
+first derives a local image from the OpenXiangShan environment and installs the
+system dependencies, then launches `artifact-evaluation.sh` as a user matching
+the host UID/GID. All generated files are therefore host-owned:
 
 - `evaluation/figure11.md`
 - `evaluation/figure12.md`
