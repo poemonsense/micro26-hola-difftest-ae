@@ -42,32 +42,53 @@ Palladium access is required.
 
 \subsection{Artifact Metadata}
 
-{\small
+{\small\sloppy
 \begin{itemize}
-  \item \textbf{Sources:} SVM, NutShell, and their nested dependencies,
-        initialized by the recursive checkout.
-  \item \textbf{Workload:} NutShell \path{ready-to-run/linux.bin}; all
-        simulator binaries are built by the workflow.
-  \item \textbf{Scope:} 31 configurations: 30 expected-good runs and one
-        expected cache-capacity abort.
-  \item \textbf{Environment:} OpenXiangShan xs-env (x86-64 Ubuntu 24.04) via
-        Docker. The workflow builds the required local image automatically.
-  \item \textbf{Toolchain:} Mill, Chisel, Verilator, a RISC-V cross compiler,
-        C/C++ build tools, Python, and matplotlib; all are provisioned by the
-        Docker image.
-  \item \textbf{Hardware:} A 16-core x86-64 host with at least 32 GiB RAM is
-        recommended. No accelerator or programmable logic is required.
-  \item \textbf{Storage:} Approximately 20 GiB for Docker images, caches,
-        build products, and raw logs.
-  \item \textbf{Preparation time:} Approximately 20--40 minutes, depending on
-        network and package-cache performance.
-  \item \textbf{Experiment time:} Approximately 2--4 hours on a 16-core host.
-  \item \textbf{Outputs:} Raw logs, five Markdown reports, and one Figure 14
-        PDF plot.
-  \item \textbf{Availability:} The artifact and pinned sources are available at
-        \href{https://github.com/poemonsense/micro26-hola-difftest-ae}{GitHub}.
-  \item \textbf{Licenses:} Apache License 2.0 for SVM and Mulan PSL v2 for
-        NutShell and difftest; nested dependencies include their license files.
+  \item \textbf{Algorithm:} HOLA RCache organization, replacement, and
+        refill-on-read-miss behavior.
+  \item \textbf{Program:} SVM synthesizable reference model and NutShell
+        RISC-V processor.
+  \item \textbf{Compilation:} Mill/Chisel elaboration, Verilator compilation,
+        and RISC-V cross-compilation of the bootrom.
+  \item \textbf{Transformations:} Chisel hardware descriptions to generated
+        Verilog/SystemVerilog and Verilator executables.
+  \item \textbf{Binary:} NutShell \path{ready-to-run/linux.bin} and generated
+        configuration-specific simulator binaries.
+  \item \textbf{Model:} Configurable SVM RCache model with cache-size,
+        associativity, banking, port, replacement, and refill parameters.
+  \item \textbf{Data set:} Linux boot image workload; no separate dataset.
+  \item \textbf{Run-time environment:} OpenXiangShan xs-env Ubuntu 24.04
+        Docker image with the provisioned toolchain.
+  \item \textbf{Hardware:} 16-core x86-64 host with at least 32 GiB RAM;
+        no accelerator or programmable logic is required.
+  \item \textbf{Run-time state:} 31 manifest configurations: 30 expected-good
+        runs and one expected cache-capacity abort.
+  \item \textbf{Execution:} \path{./run-all.sh} builds the image, runs the
+        workflow, and generates the evaluation reports.
+  \item \textbf{Metrics:} Evict miss rate, instruction miss rate, refill
+        overhead, phased boot miss rate, IPC, load/store IPC, and source lines.
+  \item \textbf{Output:} Five Markdown reports and one Figure 14 PDF plot,
+        with raw logs and counter provenance.
+  \item \textbf{Experiments:} Figures 11--14 and Table 4 across all 31
+        configurations.
+  \item \textbf{How much disk space required (approximately)?:} Approximately
+        20 GiB for Docker images, caches, build products, and raw logs.
+  \item \textbf{How much time is needed to prepare workflow (approximately)?:}
+        Approximately 20--40 minutes.
+  \item \textbf{How much time is needed to complete experiments (approximately)?:}
+        Approximately 2--4 hours on a 16-core host.
+  \item \textbf{Publicly available?:} Yes; the artifact and pinned sources are
+        available at
+        \url{https://github.com/poemonsense/micro26-hola-difftest-ae}.
+  \item \textbf{Code licenses (if publicly available)?:} Apache License 2.0
+        for SVM and Mulan PSL v2 for NutShell and difftest; nested dependencies
+        include their license files.
+  \item \textbf{Data licenses (if publicly available)?:} No separate dataset;
+        the included workload follows the source licenses.
+  \item \textbf{Workflow automation framework used?:} Bash scripts and Docker.
+  \item \textbf{Archived (provide DOI)?:} The archival release is available at
+        \url{https://doi.org/10.5281/zenodo.XXXXXXX} (placeholder DOI);
+        an evaluation archive supports anonymous or offline access.
 \end{itemize}
 }
 
@@ -76,7 +97,7 @@ Palladium access is required.
 The host requires Git and Docker Engine with Linux-container support. Run the
 following two commands in order.
 
-\paragraph{Command 1: Clone and enter the artifact.}
+\paragraph{\textbf{Command 1}: Clone and enter the artifact.}
 
 \begin{verbatim}
 git clone --recursive \
@@ -85,7 +106,7 @@ micro26-hola-difftest-ae
 cd micro26-hola-difftest-ae
 \end{verbatim}
 
-\paragraph{Command 2: Run the complete evaluation.}
+\paragraph{\textbf{Command 2}: Run the complete evaluation.}
 
 \begin{verbatim}
 ./run-all.sh
@@ -105,14 +126,14 @@ stages:
 
 A successful run creates:
 
-\begin{verbatim}
-evaluation/figure11.md
-evaluation/figure12.md
-evaluation/figure13.md
-evaluation/figure14.md
-evaluation/figure14.pdf
-evaluation/table4.md
-\end{verbatim}
+\begin{itemize}
+  \item \texttt{evaluation/figure11.md}
+  \item \texttt{evaluation/figure12.md}
+  \item \texttt{evaluation/figure13.md}
+  \item \texttt{evaluation/figure14.md}
+  \item \texttt{evaluation/figure14.pdf}
+  \item \texttt{evaluation/table4.md}
+\end{itemize}
 
 The Markdown reports include measured values, paper values, raw-log provenance,
 and the calculation for each measured point. Figures 11--13 use final hardware
