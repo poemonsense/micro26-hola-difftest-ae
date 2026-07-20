@@ -28,6 +28,7 @@
 % please remove above part
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 \appendix
 \section{Artifact Appendix}
 
@@ -42,10 +43,7 @@ Palladium access is required.
 
 \subsection{Artifact Metadata}
 
-{\small\sloppy
 \begin{itemize}
-  \item \textbf{Algorithm:} HOLA RCache organization, replacement, and
-        refill-on-read-miss behavior.
   \item \textbf{Program:} SVM synthesizable reference model and NutShell
         RISC-V processor.
   \item \textbf{Compilation:} Mill/Chisel elaboration, Verilator compilation,
@@ -54,8 +52,6 @@ Palladium access is required.
         Verilog/SystemVerilog and Verilator executables.
   \item \textbf{Binary:} NutShell \path{ready-to-run/linux.bin} and generated
         configuration-specific simulator binaries.
-  \item \textbf{Model:} Configurable SVM RCache model with cache-size,
-        associativity, banking, port, replacement, and refill parameters.
   \item \textbf{Data set:} Linux boot image workload; no separate dataset.
   \item \textbf{Run-time environment:} OpenXiangShan xs-env Ubuntu 24.04
         Docker image with the provisioned toolchain.
@@ -69,8 +65,7 @@ Palladium access is required.
         overhead, phased boot miss rate, IPC, load/store IPC, and source lines.
   \item \textbf{Output:} Five Markdown reports and one Figure 14 PDF plot,
         with raw logs and counter provenance.
-  \item \textbf{Experiments:} Figures 11--14 and Table 4 across all 31
-        configurations.
+  \item \textbf{Experiments:} Figures 11--14 and Table 4.
   \item \textbf{How much disk space required (approximately)?:} Approximately
         20 GiB for Docker images, caches, build products, and raw logs.
   \item \textbf{How much time is needed to prepare workflow (approximately)?:}
@@ -90,7 +85,6 @@ Palladium access is required.
         \url{https://doi.org/10.5281/zenodo.XXXXXXX} (placeholder DOI);
         an evaluation archive supports anonymous or offline access.
 \end{itemize}
-}
 
 \subsection{Running the Artifact}
 
@@ -101,8 +95,7 @@ following two commands in order.
 
 \begin{verbatim}
 git clone --recursive \
-  https://github.com/poemonsense/\
-micro26-hola-difftest-ae
+  https://github.com/poemonsense/micro26-hola-difftest-ae
 cd micro26-hola-difftest-ae
 \end{verbatim}
 
@@ -149,7 +142,7 @@ The metric is
 \]
 
 \begin{center}
-\begin{tabular}{lrrr}
+\begin{tabular}{cccc}
 \hline
 Cache & 4-way & 8-way & 16-way \\
 \hline
@@ -172,7 +165,7 @@ The metric is
 \]
 
 \begin{center}
-\begin{tabular}{lrrrr}
+\begin{tabular}{ccccc}
 \hline
 Configuration & 256 KiB & 512 KiB & 1 MiB & 2 MiB \\
 \hline
@@ -194,7 +187,7 @@ overhead is
 \]
 
 \begin{center}
-\begin{tabular}{lrrrr}
+\begin{tabular}{ccccc}
 \hline
 Series & 256 KiB & 512 KiB & 1 MiB & 2 MiB \\
 \hline
@@ -228,7 +221,7 @@ an AI reviewer. It was generated with OpenAI Codex CLI 0.144.4 using the
 the following prompt:
 
 \begin{quote}
-\small\ttfamily\raggedright You are an Reviewer for MICRO 2026 Artifact Evaluation. Please evaluate the artifact and check whether it meets the requirements for Functional and Reproduciable Badges. Write down your progress, key results, and conclusions in AE-Report-Codex directory.
+\ttfamily\raggedright You are a Reviewer for MICRO 2026 Artifact Evaluation. Please evaluate the artifact and check whether it meets the requirements for Functional and Reproduciable Badges. Write down your progress, key results, and conclusions in AE-Report-Codex directory.
 \end{quote}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
